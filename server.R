@@ -13,17 +13,17 @@ load("PEECmap.Rdata")
 PEEC <- c(-74.914414, 41.171450) #lon, lat
 A <- c(-74.5, 41.5)
 B <- c(-75.5, 40.8)
+site_coords <- data.frame(site=c("Alexander", "Buchanan", "PEEC"),
+                          lat=c(41.5, 40.8, 41.17450),
+                          lon=c(-74.5, -75.5, -74.914414))
 
 # Bad curr data
-curr_data <- data.frame(current.data="no data entered")
-n <- 0
+full_data <- fake_data
+
 
 shinyServer(function(input, output, session) {
 
-  # Combine the selected variables into a new data frame
-#   selectedData <- reactive({
-#     iris[, c(input$xcol, input$ycol)]
-#   })
+  
   curr_data <- reactive({
     #n <- input$goButton # Don't use n
     site <- input$siteName
@@ -36,13 +36,8 @@ shinyServer(function(input, output, session) {
     lat <- NA # THIS IS A CHEAP HACK, MUST FIX
     lon <- NA # THIS IS A CHEAP HACK, MUST FIX
 
+    # The data that has just been added
     curr_data <- data.frame(site=site, date=date, chl=chl,abs=abs, temp=temp, lat=NA, lon=NA)
-
-    # Make the date displayable
-    #to_display <- curr_data
-    #to_display$date <- as.character(to_display$date)
-    #to_display
-
   })
 
 
@@ -62,12 +57,14 @@ shinyServer(function(input, output, session) {
 #     kmeans(selectedData(), input$clusters)
 #   })
   output$mapPlot <- renderPlot({
-#     ggplot(mpg, aes(x=cty, y=hwy)) +
-#       geom_point()
-    ggmap(PEEC_map) +
-      geom_point(data=fake_data, aes(x=lon, y=lat), colour="white") +
-      geom_text(data=fake_data, aes(x=lon, y=lat, label=site),
-                colour="white", hjust=0, vjust=0)
+    # Old silly map method
+#     ggmap(PEEC_map) +
+#       geom_point(data=fake_data, aes(x=lon, y=lat), colour="white") +
+#       geom_text(data=fake_data, aes(x=lon, y=lat, label=site),
+#                 colour="white", hjust=0, vjust=0)
+    ggmap(PEEC_map) + 
+      geom_point(data=site_coords, aes(x=lon, y=lat), colour="white") + 
+      geom_text(data=site_coords, aes(x=lon, y=lat, label=site), colour="white", hjust=0, vjust=0)
   })
 
   output$dataTable <- renderTable({
@@ -78,12 +75,8 @@ shinyServer(function(input, output, session) {
   })
 
   output$dataPlot <- renderPlot({
-#     par(mar = c(5.1, 4.1, 0, 1))
-#     plot(selectedData(),
-#          col = clusters()$cluster,
-#          pch = 20, cex = 3)
-#     points(clusters()$centers, pch = 4, cex = 4, lwd = 4)
-    #n <- input$goButton
+    
+    # n <- input$goButton
     fake_data <- add_data()
 
     fake_data_m <- melt(fake_data, id.vars=c("site", "date", "lat", "lon"))
